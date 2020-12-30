@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改类似powerdesigher创建，生成sql')" />
+</head>
+<body class="white-bg">
+<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-table-edit" th:object="${pdTable}">
+        <input name="tableId" th:field="*{tableId}" type="hidden">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">表格名称：</label>
+            <div class="col-sm-8">
+                <input name="tableName" th:field="*{tableName}" class="form-control" type="text" disabled>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">表格描述：</label>
+            <div class="col-sm-8">
+                <input name="tableRemark" th:field="*{tableRemark}" class="form-control" type="text" disabled>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">列：</label>
+            <div class="col-sm-8">
+               <table class="table table-bordered">
+                   <thead>
+                        <tr>
+                            <th width="30%">列名</th>
+                            <th width="30%">注释</th>
+                            <th width="30%">类型</th>
+                            <th>
+                                <a href="#">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                </a>
+                            </th>
+                        </tr>
+                   </thead>
+                   <tbody>
+                        <tr th:each="el:${pdTable.params['list']}">
+                            <td>
+                                <input name="colName" class="form-control" th:value="${el['colName']}">
+                            </td>
+                            <td>
+                                <input name="colComment" class="form-control" th:value="${el['colComment']}">
+                            </td>
+                            <td>
+                                <select name="colType" class="form-control" th:with="type=${@dict.getType('col_type')}" th:value="${el['colType']}">
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </td>
+                            <td>
+                                <a href="#">
+                                    <span class="glyphicon glyphicon-minus"></span>
+                                </a>
+                            </td>
+                        </tr>
+                   </tbody>
+               </table>
+               <script>var row =
+                   '<tr>'+
+                       '<td>'+
+                           '<input name="colName" class="form-control">'+
+                       '</td>'+
+                       '<td>'+
+                           '<input name="colComment" class="form-control">'+
+                       '</td>'+
+                       '<td>'+
+                           '<select name="colType" class="form-control">'+
+                               '<option value="11">整型</option>'+
+                               '<option value="12">浮点型</option>'+
+                           '</select>'+
+                       '</td>'+
+                       '<td>'+
+                           '<a href="#">'+
+                               '<span class="glyphicon glyphicon-minus"></span>'+
+                           '</a>'+
+                       '</td>'+
+                   '</tr>';
+               </script>
+            </div>
+        </div>
+    </form>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var prefix = ctx + "table/table";
+    $("#form-table-edit").validate({
+        focusCleanup: true
+    });
+
+    function submitHandler() {
+        if ($.validate.form()) {
+            var data = {"tableId":$('#tableId').val(),cols: []};
+            $('table tbody>tr').each(function () {
+                var line = {};
+                var i0 = $(this).find('input').eq(0);
+                var i1 = $(this).find('input').eq(1);
+                var s2 = $(this).find('select').eq(0);
+                line[i0.attr('name')] = i0.val();
+                line[i1.attr('name')] = i1.val();
+                line[s2.attr('name')] = s2.val();
+                data.cols.push(line);
+            });
+
+            $.ajax({
+                url: prefix + '/update',
+                type:'post',
+                contentType: "application/json;charset=utf-8",
+                data:JSON.stringify(data),
+                success:function (ret) {
+                    if(ret.code=='0'){
+                        $.modal.close();
+                        parent.$.table.refresh();
+                    }else {
+                        $.modal.alertError(ret.msg);
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        $(document).on("click","table span.glyphicon",function(e){
+            if($(this).is(".glyphicon-plus")){
+                $('table tbody').append(row);
+            }else{
+                $(this).parents('tr').remove();
+            }
+            e.stopPropagation();
+        });
+
+        $('select[name="colType"]').each(function () {
+            $(this).val($(this).attr('value'));
+        })
+    })
+</script>
+</body>
+</html>

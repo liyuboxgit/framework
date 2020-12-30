@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.generator.mapper.PdTableMapper">
+    
+    <resultMap type="PdTable" id="PdTableResult">
+        <result property="tableId"    column="table_id"    />
+        <result property="tableName"    column="table_name"    />
+        <result property="tableRemark"    column="table_remark"    />
+        <result property="tableCont"    column="table_cont"    />
+    </resultMap>
+
+    <sql id="selectPdTableVo">
+        select table_id, table_name, table_remark, table_cont from pd_table
+    </sql>
+
+    <select id="selectPdTableList" parameterType="PdTable" resultMap="PdTableResult">
+        <include refid="selectPdTableVo"/>
+        <where>  
+            <if test="tableName != null  and tableName != ''"> and table_name like concat('%', #{tableName}, '%')</if>
+            <if test="tableRemark != null  and tableRemark != ''"> and table_remark = #{tableRemark}</if>
+        </where>
+    </select>
+    
+    <select id="selectPdTableById" parameterType="Long" resultMap="PdTableResult">
+        <include refid="selectPdTableVo"/>
+        where table_id = #{tableId}
+    </select>
+        
+    <insert id="insertPdTable" parameterType="PdTable" useGeneratedKeys="true" keyProperty="tableId">
+        insert into pd_table
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tableName != null">table_name,</if>
+            <if test="tableRemark != null">table_remark,</if>
+            <if test="tableCont != null">table_cont,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tableName != null">#{tableName},</if>
+            <if test="tableRemark != null">#{tableRemark},</if>
+            <if test="tableCont != null">#{tableCont},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePdTable" parameterType="PdTable">
+        update pd_table
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tableName != null">table_name = #{tableName},</if>
+            <if test="tableRemark != null">table_remark = #{tableRemark},</if>
+            <if test="tableCont != null">table_cont = #{tableCont},</if>
+        </trim>
+        where table_id = #{tableId}
+    </update>
+
+    <delete id="deletePdTableById" parameterType="Long">
+        delete from pd_table where table_id = #{tableId}
+    </delete>
+
+    <delete id="deletePdTableByIds" parameterType="String">
+        delete from pd_table where table_id in 
+        <foreach item="tableId" collection="array" open="(" separator="," close=")">
+            #{tableId}
+        </foreach>
+    </delete>
+
+</mapper>
